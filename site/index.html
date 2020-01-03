@@ -3,7 +3,165 @@
 <head>
 <meta charset="UTF-8">
 <title>ペン習字</title>
+<script type="text/javascript" src="./js/main.js?ver=1578040758" ></script>
+<script type="text/javascript" src="./js/font_detector.js" ></script>
+<script type="text/javascript">
+function bodyOnLoad(){
+    initShuji();
+}
+
+function printClick(){
+    window.print();
+}
+
+// document.fonts.ready.then(function (evt) {
+//     hello();
+// });
+
+</script>
+<style type="text/css" media="print">
+.noprint {
+    display: none;
+}
+td {
+    margin: 10px;
+}
+hr {
+    display: none;
+}
+</style>
 </head>
-<body>
+<body onload="bodyOnLoad()">
+<div class="noprint">
+    <button onclick="printClick()">印刷</button>
+
+    文章<br/>    
+    <textarea id="body-text" cols="80" rows="10">春は、あけぼの。
+やうやう白くなりゆく山ぎは少し明りて紫だちたる雲の細くたなびきたる。
+夏は、夜。
+月の頃はさらなり。闇もなほ。螢の多く飛び違ひたる。
+また、ただ一つ二つなど、ほのかにうち光りて行くもをかし。
+雨など降るもをかし。
+秋は、夕暮。
+夕日のさして、山の端いと近うなりたるに、烏の寝どころへ行くとて、三つ四つ、二つ三つなど、飛び急ぐさへあはれなり。
+まいて雁などの列ねたるがいと小さく見ゆるは、いとをかし。
+日入り果てて、風の音、虫の音など、はたいふべきにあらず。
+冬は、つとめて。
+雪の降りたるはいふべきにもあらず。
+霜のいと白きも、またさらでも、いと寒きに、火など急ぎ熾して、炭もて渡るも、いとつきづきし。
+昼になりて、ぬるくゆるびもていけば、火桶の火も、白き灰がちになりて、わろし。</textarea>
+
+    <table style="border-style: ridge; ">
+        <tr>
+            <td>フォント名</td>
+            <td>サイズ</td>
+            <td>太さ</td>
+            <td>色</td>
+            <td>字間</td>
+            <td>行間</td>
+            <td>中心線</td>
+            <td>行数</td>
+            <td>列数</td>
+            <td>方向</td>
+        </tr>
+        <tr>
+            <td><select id="font-list"></select></td>
+            <!-- <input id="font-size" type="text" size="2" value="48" /> -->
+            <input id="rows" type="text" size="2" value="10" />
+            <input id="cols" type="text" size="2" value="5" />
+            <td><select id="font-size"></select> </td>
+            <td>
+                <select id="">
+                    <option>太字</option>
+                    <option selected>標準</option>
+                    <option>細字</option>
+                </select>
+            </td>
+            <td></td>
+            <td><select id="char-margin"></select> </td>
+            <td><select id="line-margin"></select> </td>
+            <td><input id="center-line" type="checkbox" />表示 </td>
+            <td><select id="rows-list"></select></td>
+            <td><select id="cols-list"></select></td>
+            <td>
+                <select id="direction">
+                    <option>横書き</option>
+                    <option>縦書き</option>
+                </select>
+            </td>
+            
+        </tr>
+    </table>
+</div>
+<textarea id="font-list-text" style="display: none;">AR P丸ゴシック体M
+AR丸ゴシック体M
+BIZ UDPゴシック
+BIZ UDP明朝 Medium
+BIZ UDゴシック
+BIZ UD明朝 Medium
+HGP創英角ｺﾞｼｯｸUB
+HGP創英角ﾎﾟｯﾌﾟ体
+HGP創英ﾌﾟﾚｾﾞﾝｽEB
+HGP教科書体
+HGP明朝B
+HGP明朝E
+HGP行書体
+HGPｺﾞｼｯｸE
+HGPｺﾞｼｯｸM
+HGS創英角ｺﾞｼｯｸUB
+HGS創英角ﾎﾟｯﾌﾟ体
+HGS創英ﾌﾟﾚｾﾞﾝｽEB
+HGS教科書体
+HGS明朝B
+HGS明朝E
+HGS行書体
+HGSｺﾞｼｯｸE
+HGSｺﾞｼｯｸM
+HG丸ｺﾞｼｯｸM-PRO
+HG創英角ｺﾞｼｯｸUB
+HG創英角ﾎﾟｯﾌﾟ体
+HG創英ﾌﾟﾚｾﾞﾝｽEB
+HG教科書体
+HG明朝B
+HG明朝E
+HG正楷書体-PRO
+HG行書体
+HGｺﾞｼｯｸE
+HGｺﾞｼｯｸM
+UD デジタル 教科書体 N-B
+UD デジタル 教科書体 N-R
+UD デジタル 教科書体 NK-B
+UD デジタル 教科書体 NK-R
+UD デジタル 教科書体 NP-B
+UD デジタル 教科書体 NP-R
+ふみゴシック
+メイリオ
+富士ポップ
+富士ポップＰ
+恋文ペン字
+有澤太楷書
+有澤太楷書P
+有澤楷書
+有澤行書
+正調祥南行書体
+正調祥南行書体EX
+正調祥南行書体EXP
+正調祥南行書体P
+江戸勘亭流
+江戸勘亭流Ｐ
+游ゴシック
+游ゴシック Light
+游ゴシック Medium
+游明朝
+游明朝 Demibold
+游明朝 Light
+祥南行書体
+祥南行書体P
+魚石行書
+麗流隷書
+ＭＳ ゴシック
+ＭＳ 明朝
+ＭＳ Ｐゴシック
+ＭＳ Ｐ明朝</textarea>
 </body>
 </html>
