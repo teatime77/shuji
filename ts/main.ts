@@ -1,11 +1,15 @@
 declare let Detector: any;
 
+const VERTICAL = "縦書き";
+const HORIZONTAL = "横書き";
+
 let fontSizeList: HTMLSelectElement;
 let fontList: HTMLSelectElement;
 let charMarginList: HTMLSelectElement;
 let lineMarginList: HTMLSelectElement;
 let rowsList : HTMLSelectElement;
 let colsList : HTMLSelectElement;
+let directionList : HTMLSelectElement;
 
 class Inf {
     fontSize: number;
@@ -14,6 +18,7 @@ class Inf {
     charMargin : number;
     lineMargin : number;
     fontName : string;
+    direction: string;
 
     constructor(){
         let opt = fontList.selectedOptions[0];
@@ -25,6 +30,7 @@ class Inf {
 
         this.charMargin = parseFloat(charMarginList.value);
         this.lineMargin = parseFloat(lineMarginList.value);
+        this.direction = directionList.value;
     }
 }
 
@@ -52,7 +58,7 @@ function msg(s: string){
     console.log(s);
 }
 
-function setSelect(id: string, values: any[], init:number|undefined = undefined) : HTMLSelectElement {
+function setSelect(id: string, values: any[], init:any|undefined = undefined) : HTMLSelectElement {
     let sel = document.getElementById(id) as HTMLSelectElement;
 
     for(let value of values){
@@ -75,6 +81,7 @@ function initSettings(){
     lineMarginList = setSelect("line-margin", [ 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1], 0.5);
     rowsList = setSelect("rows-list", range(1, 100), 20);
     colsList = setSelect("cols-list", range(1, 100), 20);
+    directionList = setSelect("direction-list", [HORIZONTAL, VERTICAL], HORIZONTAL);
 
     fontSizeList.onchange = draw;
     charMarginList.onchange = draw;
@@ -131,12 +138,23 @@ function drawText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 function makeCanvasContext(inf: Inf) : [ HTMLCanvasElement, CanvasRenderingContext2D ]{
     let canvas = document.createElement("canvas");
 
-    canvas.width  = (inf.cols + (inf.cols + 1) * inf.charMargin) * inf.fontSize;
-    canvas.height = (inf.rows + (inf.rows + 1) * inf.lineMargin) * inf.fontSize;
-
     canvas.style.display = "block";
-    canvas.style.marginLeft = "auto";
-    canvas.style.marginRight = "auto";
+    if(inf.direction == HORIZONTAL){
+
+        canvas.width  = (inf.cols + (inf.cols + 1) * inf.charMargin) * inf.fontSize;
+        canvas.height = (inf.rows + (inf.rows + 1) * inf.lineMargin) * inf.fontSize;
+
+        canvas.style.marginLeft = "auto";
+        canvas.style.marginRight = "auto";
+    }
+    else{
+
+        canvas.height  = (inf.cols + (inf.cols + 1) * inf.charMargin) * inf.fontSize;
+        canvas.width   = (inf.rows + (inf.rows + 1) * inf.lineMargin) * inf.fontSize;
+
+        canvas.style.marginLeft = "auto";
+        canvas.style.marginRight = "auto";
+    }
 
     // <canvas style="border-style: ridge; margin-left: auto; margin-right: auto; width: 100px; text-align: center; display: block;"></canvas>    
 
@@ -156,11 +174,10 @@ function makeCanvasContext(inf: Inf) : [ HTMLCanvasElement, CanvasRenderingConte
 }
 
 function draw(){
-    for(let c of Array.from(document.body.getElementsByTagName("canvas"))){
-        document.body.removeChild(c)
-    }
-    for(let c of Array.from(document.body.getElementsByTagName("hr"))){
-        document.body.removeChild(c)
+    for(let tag of [ "svg", "canvas", "hr" ]){
+        for(let c of Array.from(document.body.getElementsByTagName(tag))){
+            document.body.removeChild(c)
+        }
     }
 
     const bodyText = (document.getElementById("body-text") as HTMLTextAreaElement).value;
@@ -170,7 +187,24 @@ function draw(){
     let [canvas , ctx] = makeCanvasContext(inf);
 
     let tm = ctx.measureText("漢");
-    let fontHeight = Math.max(0, tm.actualBoundingBoxAscent) + Math.max(0, tm.actualBoundingBoxDescent);
+    let lineSize, charSize;
+    
+    // let charWidth  = tm.width;
+    // let charHeight = Math.max(0, tm.actualBoundingBoxAscent) + Math.max(0, tm.actualBoundingBoxDescent);
+
+    let charWidth = inf.fontSize;
+    let charHeight = inf.fontSize;
+
+    if(inf.direction == HORIZONTAL){
+
+        lineSize = charHeight;
+        charSize = charWidth;
+    }
+    else{
+
+        lineSize = charWidth;
+        charSize = charHeight;
+    }
 
     let lines : string[] = [];
 
@@ -185,15 +219,28 @@ function draw(){
     }
 
     let lineIdx = 0;
-    let ystart = (inf.lineMargin + 0.5) * fontHeight;
+    let pageStart = (inf.lineMargin + 0.5) * lineSize;
     for(let line of lines){
-        let y = ystart + lineIdx * (1 + inf.lineMargin) * fontHeight;
-        let xstart = (inf.charMargin + 0.5) * inf.fontSize;
+        let linePos = pageStart + lineIdx * (1 + inf.lineMargin) * lineSize;
+        let lineStart = (inf.charMargin + 0.5) * charSize;
         for(let [idx, c] of line.split('').entries()){
-            let x = xstart + idx * (1 + inf.charMargin) * inf.fontSize;
+            let charPos = lineStart + idx * (1 + inf.charMargin) * charSize;
 
-            drawLine(ctx, x - inf.fontSize/2.0, y, x + inf.fontSize/2.0, y);
-            drawLine(ctx, x, y - fontHeight/2.0, x, y + fontHeight/2.0);
+            let x, y;
+
+            if(inf.direction == HORIZONTAL){
+
+                x = charPos;
+                y = linePos;
+            }
+            else{
+
+                x = canvas.width - linePos;
+                y = charPos;
+            }
+
+            drawLine(ctx, x - charWidth/2.0, y, x + charWidth/2.0, y);
+            drawLine(ctx, x, y - charHeight/2.0, x, y + charHeight/2.0);
 
             drawText(ctx, c, x, y);
         }

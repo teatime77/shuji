@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>ペン習字</title>
-<script type="text/javascript" src="./js/main.js?ver=1578040758" ></script>
+<script type="text/javascript" src="./js/main.js?ver=1578189928" ></script>
 <script type="text/javascript" src="./js/font_detector.js" ></script>
 <script type="text/javascript">
 function bodyOnLoad(){
@@ -32,6 +32,17 @@ hr {
 </style>
 </head>
 <body onload="bodyOnLoad()">
+<svg viewBox="0 0 200 200">
+    <g font-family="恋文ペン字" font-size="16">
+        <text x="50,50,50,50,50,50,50,50" y="20" dy="20,20,20,20,20,20,20,20" writing-mode="tb" fill="blue" text-anchor="middle">今、な。「20年」</text>
+        <text x="100" y="20" writing-mode="tb" fill="red">
+                今、「20年」な。
+            </text>
+        <text x="150" y="20" writing-mode="tb" fill="green" glyph-orientation-vertical="0">
+                今、「20年」な。
+            </text>
+    </g>
+</svg>
 <div class="noprint">
     <button onclick="printClick()">印刷</button>
 
@@ -83,12 +94,7 @@ hr {
             <td><input id="center-line" type="checkbox" />表示 </td>
             <td><select id="rows-list"></select></td>
             <td><select id="cols-list"></select></td>
-            <td>
-                <select id="direction">
-                    <option>横書き</option>
-                    <option>縦書き</option>
-                </select>
-            </td>
+            <td><select id="direction-list"></select></td>
             
         </tr>
     </table>
