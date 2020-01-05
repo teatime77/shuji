@@ -3,28 +3,39 @@ declare let Detector: any;
 const VERTICAL = "縦書き";
 const HORIZONTAL = "横書き";
 
-let fontSizeList: HTMLSelectElement;
 let fontList: HTMLSelectElement;
+let fontSizeList: HTMLSelectElement;
+let fontWeightList : HTMLSelectElement;
+let colorList : HTMLSelectElement;
+
 let charMarginList: HTMLSelectElement;
 let lineMarginList: HTMLSelectElement;
 let rowsList : HTMLSelectElement;
 let colsList : HTMLSelectElement;
 let directionList : HTMLSelectElement;
 
+let colors = [ "#000000", "#202020", "#404040", "#606060", "#808080", "#A0A0A0", "#C0C0C0", "#E0E0E0", "#F0F0F0" ];
+
 class Inf {
+    fontName : string;
     fontSize: number;
+    fontWeight: number;
+    color: string;
+
     rows : number;
     cols : number;
     charMargin : number;
     lineMargin : number;
-    fontName : string;
     direction: string;
 
     constructor(){
         let opt = fontList.selectedOptions[0];
+
         this.fontName = opt.textContent!;
-    
-        this.fontSize = parseInt(fontSizeList.value)    
+        this.fontSize = parseInt(fontSizeList.value);  
+        this.fontWeight = parseInt(fontWeightList.value);  
+        this.color = colors[colors.length - parseInt(colorList.value)];
+
         this.rows = parseInt(rowsList.value);
         this.cols = parseInt(colsList.value);
 
@@ -34,7 +45,7 @@ class Inf {
     }
 }
 
-function range(start: number, end: number|undefined, step: number = 1){
+function range(start: number, end: number|undefined = undefined, step: number = 1): number[]{
     if(end == undefined){
 
         return [...Array(start).keys()];
@@ -75,8 +86,12 @@ function setSelect(id: string, values: any[], init:any|undefined = undefined) : 
     return sel;
 }
 
+
 function initSettings(){
     fontSizeList = setSelect("font-size", range(8, 100, 2), 48);
+    fontWeightList = setSelect("font-weight", range(100, 900, 100), 500);
+    colorList = setSelect("color", range(1, colors.length + 1), 5);
+
     charMarginList = setSelect("char-margin", [ 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1], 0.5);
     lineMarginList = setSelect("line-margin", [ 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1], 0.5);
     rowsList = setSelect("rows-list", range(1, 100), 20);
@@ -84,10 +99,16 @@ function initSettings(){
     directionList = setSelect("direction-list", [HORIZONTAL, VERTICAL], HORIZONTAL);
 
     fontSizeList.onchange = draw;
+    fontWeightList.onchange = draw;
+    colorList.onchange = draw;
+
+    colsList.onchange = draw;
+
     charMarginList.onchange = draw;
     lineMarginList.onchange = draw;
     rowsList.onchange = draw;
     colsList.onchange = draw;
+    directionList.onchange = draw;
 }
 
 function initShuji(){
@@ -117,6 +138,46 @@ function getFontList(){
     }
 
     fontList.onchange = draw;
+}
+
+function drawLine2(inf: Inf, g: SVGGElement, x1: number, y1: number, x2: number, y2: number){
+    let hline = document.createElementNS("http://www.w3.org/2000/svg","line");
+    g.appendChild(hline);
+
+    hline.setAttribute("stroke", inf.color);
+    hline.setAttribute("stroke-width", `${1}`);
+    hline.setAttribute("stroke-dasharray", "5,5");
+
+    hline.setAttribute("x1", `${x1}`);
+    hline.setAttribute("y1", `${y1}`);
+    hline.setAttribute("x2", `${x2}`);
+    hline.setAttribute("y2", `${y2}`);
+}
+
+function drawText2(inf: Inf, g: SVGGElement, str: string, x: number, y: number){
+    let text = document.createElementNS("http://www.w3.org/2000/svg","text");
+    g.appendChild(text);
+
+    text.setAttribute("font-family", inf.fontName);
+    text.setAttribute("fill", inf.color);
+    text.setAttribute("font-size", `${inf.fontSize}`);
+    text.setAttribute("font-weight", `${inf.fontWeight}`);
+
+
+    text.setAttribute("text-anchor", "middle");
+    text.setAttribute("dominant-baseline", "central");
+    text.setAttribute("alignment-baseline", "central");
+    // text.setAttribute("", "");
+
+    if(inf.direction == VERTICAL){
+
+        text.setAttribute("writing-mode", "tb");
+    }
+    // text.setAttribute("stroke-width", `${0.2 * p.y}`);
+    text.setAttribute("x", "" + x);
+    text.setAttribute("y", "" + y);
+    text.textContent = str;
+
 }
 
 function drawLine(ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number){
@@ -165,12 +226,50 @@ function makeCanvasContext(inf: Inf) : [ HTMLCanvasElement, CanvasRenderingConte
 
     ctx.textBaseline = "middle";
     ctx.textAlign = "center";
-    let color = "#808080"
-    ctx.fillStyle = color;
-    ctx.strokeStyle = color;
+    ctx.fillStyle = inf.color;
+    ctx.strokeStyle = inf.color;
     ctx.setLineDash([5, 5]);
 
     return [ canvas, ctx ];
+}
+
+function makeSVG(inf: Inf) : SVGGElement{
+    let width: number, height: number;
+
+    if(inf.direction == HORIZONTAL){
+
+        width  = (inf.cols + (inf.cols + 1) * inf.charMargin) * inf.fontSize;
+        height = (inf.rows + (inf.rows + 1) * inf.lineMargin) * inf.fontSize;
+
+        // canvas.style.marginLeft = "auto";
+        // canvas.style.marginRight = "auto";
+    }
+    else{
+
+        height  = (inf.cols + (inf.cols + 1) * inf.charMargin) * inf.fontSize;
+        width   = (inf.rows + (inf.rows + 1) * inf.lineMargin) * inf.fontSize;
+
+        // canvas.style.marginLeft = "auto";
+        // canvas.style.marginRight = "auto";
+    }
+
+
+    let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.style.width = `${width}px`;
+    svg.style.height = `${height}px`;
+    svg.style.margin = "0px";
+
+    // viewBox="-10 -10 20 20"
+    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+    document.body.appendChild(svg);
+
+    let g = document.createElementNS("http://www.w3.org/2000/svg","g");
+    svg.appendChild(g);
+
+    // let ys = range(line.length).map(i=> startY + i * inf.fontSize);
+
+    return g;
 }
 
 function draw(){
@@ -180,9 +279,11 @@ function draw(){
         }
     }
 
-    const bodyText = (document.getElementById("body-text") as HTMLTextAreaElement).value;
-
     let inf = new Inf();
+
+    let g = makeSVG(inf);
+
+    const bodyText = (document.getElementById("body-text") as HTMLTextAreaElement).value;
 
     let [canvas , ctx] = makeCanvasContext(inf);
 
@@ -243,6 +344,13 @@ function draw(){
             drawLine(ctx, x, y - charHeight/2.0, x, y + charHeight/2.0);
 
             drawText(ctx, c, x, y);
+
+
+            drawLine2(inf, g, x - charWidth/2.0, y, x + charWidth/2.0, y);
+            drawLine2(inf, g, x, y - charHeight/2.0, x, y + charHeight/2.0);
+
+            drawText2(inf, g, c, x, y);
+
         }
 
         lineIdx++;
@@ -251,6 +359,9 @@ function draw(){
             document.body.appendChild(document.createElement("hr"));
 
             [canvas , ctx] = makeCanvasContext(inf);
+
+            g = makeSVG(inf);
+
             lineIdx = 0;
         }
     }
