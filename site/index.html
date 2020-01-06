@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>ペン習字</title>
-<script type="text/javascript" src="./js/main.js?ver=1578217595" ></script>
+<script type="text/javascript" src="./js/main.js?ver=1578227224" ></script>
 <script type="text/javascript" src="./js/font_detector.js" ></script>
 <script type="text/javascript">
 function bodyOnLoad(){
@@ -32,6 +32,21 @@ hr {
 </style>
 </head>
 <body onload="bodyOnLoad()">
+<div style="zoom: 50%;">
+<svg viewBox="0 0 200 200" style="width: 200px; height: 200px; border-style: ridge;">
+    <g font-family="sans-serif" font-size="20">
+        <text x="50,50,50,50,50,50,50,50,50,50" y="20" dy="20,20,20,20,20,20,20,20,20,20" fill="blue" text-anchor="middle">
+            今年は「2012年」なり
+        </text>
+        <text x="100" y="20" writing-mode="tb" fill="red">
+            今年は「2012年」なり
+        </text>
+        <text x="150" y="20" writing-mode="tb" fill="green" glyph-orientation-vertical="0">
+            今年は「2012年」なり
+        </text>
+    </g>
+</svg>
+</div>
 <svg viewBox="0 0 200 200">
     <g font-family="恋文ペン字" font-size="16">
         <text x="50,50,50,50,50,50,50,50" y="20" dy="20,20,20,20,20,20,20,20" writing-mode="tb" fill="blue" text-anchor="middle">今、な。「20年」</text>
@@ -45,6 +60,7 @@ hr {
 </svg>
 <div class="noprint">
     <button onclick="printClick()">印刷</button>
+    <button onclick="saveClick()">設定を保存</button>
 
     文章<br/>    
     <textarea id="body-text" cols="80" rows="10">春は、あけぼの。
@@ -71,23 +87,23 @@ hr {
             <td>字間</td>
             <td>行間</td>
             <td>中心線</td>
-            <td>行数</td>
-            <td>列数</td>
+            <td>用紙</td>
+            <td>余白</td>
             <td>方向</td>
         </tr>
         <tr>
             <td><select id="font-list"></select></td>
-            <!-- <input id="font-size" type="text" size="2" value="48" /> -->
-            <input id="rows" type="text" size="2" value="10" />
-            <input id="cols" type="text" size="2" value="5" />
+            
+            <!-- <input id="rows" type="text" size="2" value="10" />
+            <input id="cols" type="text" size="2" value="5" /> -->
             <td><select id="font-size"></select> </td>
             <td><select id="font-weight"></select></td>
             <td><select id="color"></select></td>
             <td><select id="char-margin"></select> </td>
             <td><select id="line-margin"></select> </td>
             <td><input id="center-line" type="checkbox" checked />表示 </td>
-            <td><select id="rows-list"></select></td>
-            <td><select id="cols-list"></select></td>
+            <td><select id="paper-list"></select></td>
+            <td><input id="paper-margin" type="text" size="4" value="3.1" />cm</td>
             <td><select id="direction-list"></select></td>
             
         </tr>

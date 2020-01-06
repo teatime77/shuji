@@ -12,18 +12,22 @@ let centerLineCheckbox : HTMLInputElement;
 let charMarginList: HTMLSelectElement;
 let lineMarginList: HTMLSelectElement;
 
-let rowsList : HTMLSelectElement;
-let colsList : HTMLSelectElement;
+let paperList : HTMLSelectElement;
+let paperMarginInput : HTMLInputElement;
 let directionList : HTMLSelectElement;
 
 let colors = [ "#000000", "#202020", "#404040", "#606060", "#808080", "#A0A0A0", "#C0C0C0", "#E0E0E0", "#F0F0F0" ];
+let papers = ["A4縦", "A4横", "A5縦", "A5横", "B5縦", "B5横"];
+let paperSizes = [[210,297], [297,210], [148,210], [210,148], [176,250], [250,176]];
 
 class Inf {
     fontName : string;
     fontSize: number;
-    fontWeight: number;
+    fontWeight: string;
     color: string;
     centerLine : boolean;
+    paper: string;
+    paperMargin: number;
 
     rows : number;
     cols : number;
@@ -36,12 +40,23 @@ class Inf {
 
         this.fontName = opt.textContent!;
         this.fontSize = parseInt(fontSizeList.value);  
-        this.fontWeight = parseInt(fontWeightList.value);  
+        this.fontWeight = fontWeightList.value;  
         this.color = colors[colors.length - parseInt(colorList.value)];
         this.centerLine = centerLineCheckbox.checked;
 
-        this.rows = parseInt(rowsList.value);
-        this.cols = parseInt(colsList.value);
+        this.paper = papers[paperList.selectedIndex];
+        let [w_mm,h_mm] = paperSizes[paperList.selectedIndex];
+
+        this.paperMargin = parseFloat(paperMarginInput.value);
+
+        w_mm -= 2 * this.paperMargin;
+        h_mm -= 2 * this.paperMargin;
+
+        let w_px = 96 * w_mm / 25.4;
+        let h_px = 96 * h_mm / 25.4;
+
+        this.rows = Math.ceil(h_px / this.fontSize);
+        this.cols = Math.ceil(w_px / this.fontSize);
 
         this.charMargin = parseFloat(charMarginList.value);
         this.lineMargin = parseFloat(lineMarginList.value);
@@ -93,27 +108,27 @@ function setSelect(id: string, values: any[], init:any|undefined = undefined) : 
 
 function initSettings(){
     fontSizeList = setSelect("font-size", range(8, 100, 2), 48);
-    fontWeightList = setSelect("font-weight", range(100, 900, 100), 500);
-    colorList = setSelect("color", range(1, colors.length + 1), 5);
+    fontWeightList = setSelect("font-weight", ["bold", "bolder", "normal", "lighter"], "normal");
+    colorList = setSelect("color", range(1, colors.length), 5);
     centerLineCheckbox = document.getElementById("center-line") as HTMLInputElement;
 
     charMarginList = setSelect("char-margin", [ 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1], 0.5);
     lineMarginList = setSelect("line-margin", [ 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1], 0.5);
-    rowsList = setSelect("rows-list", range(1, 100), 20);
-    colsList = setSelect("cols-list", range(1, 100), 20);
+    paperList = setSelect("paper-list", papers, 20);
     directionList = setSelect("direction-list", [HORIZONTAL, VERTICAL], HORIZONTAL);
+
+    paperMarginInput = document.getElementById("paper-margin") as HTMLInputElement;
 
     fontSizeList.onchange = draw;
     fontWeightList.onchange = draw;
     colorList.onchange = draw;
     centerLineCheckbox.onchange = draw;
 
-    colsList.onchange = draw;
+    paperMarginInput.onblur = draw;
 
     charMarginList.onchange = draw;
     lineMarginList.onchange = draw;
-    rowsList.onchange = draw;
-    colsList.onchange = draw;
+    paperList.onchange = draw;
     directionList.onchange = draw;
 }
 
@@ -121,6 +136,30 @@ function initShuji(){
     initSettings();
 
     getFontList();
+
+    let settings = localStorage.getItem("settings");
+    if(settings != null){
+
+        let inf = JSON.parse(settings) as Inf;
+        fontList.value = inf.fontName;
+        fontSizeList.value = "" + inf.fontSize;
+
+        fontWeightList.value = inf.fontWeight;
+
+        let i = colors.indexOf(inf.color);
+        if(i != -1){
+            colorList.value = "" + (colors.length - i);
+        }
+
+        centerLineCheckbox.checked = inf.centerLine;
+
+        // rowsList.value = "" + inf.rows;
+        // colsList.value = "" + inf.cols;
+
+        charMarginList.value = "" + inf.charMargin;
+        lineMarginList.value = "" + inf.lineMargin;
+        directionList.value = inf.direction;
+    }
 
     draw();
 }
@@ -167,7 +206,7 @@ function drawText2(inf: Inf, g: SVGGElement, str: string, x: number, y: number){
     text.setAttribute("font-family", inf.fontName);
     text.setAttribute("fill", inf.color);
     text.setAttribute("font-size", `${inf.fontSize}`);
-    text.setAttribute("font-weight", `${inf.fontWeight}`);
+    text.setAttribute("font-weight", inf.fontWeight);
 
 
     text.setAttribute("text-anchor", "middle");
@@ -310,4 +349,12 @@ function draw(){
             lineIdx = 0;
         }
     }
+}
+
+function saveClick(){
+    let inf = new Inf();
+
+    localStorage.setItem("settings", JSON.stringify(inf));
+
+    alert("設定を保存しました。");
 }
